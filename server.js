@@ -7,19 +7,18 @@ import { runAgent } from "./agent.js"
 const app  = express()
 const PORT = process.env.PORT || 3001
 
-// Allow both local dev and Vercel production frontend
-// After you get your Vercel URL, add it here and push again
+// Updated with the real Vercel URL
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://travel-agent-gh7bnj0se-mkhaleifas-projects.vercel.app",   // ← replace xxxx with your real Vercel subdomain
+  "https://travel-agent-sepia.vercel.app",
 ]
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (e.g. curl, Postman) or matching origins
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o.replace("xxxx", "")))) {
+    if (!origin || allowedOrigins.includes(origin)) {
       cb(null, true)
     } else {
+      console.log(`CORS blocked: ${origin}`)
       cb(new Error(`CORS blocked: ${origin}`))
     }
   }
