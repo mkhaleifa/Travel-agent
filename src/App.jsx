@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect } from "react"
 import "./App.css"
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:3001"
+
 const SUGGESTED_TASKS = [
   "What's the weather in Cairo? Should I pack an umbrella?",
   "Find flights from London to Cairo on 2025-08-10 and hotels under $150/night for 3 nights.",
@@ -10,24 +12,23 @@ const SUGGESTED_TASKS = [
 ]
 
 const TOOL_ICONS = {
-  get_weather:               "◎",
-  search_flights:            "◈",
-  search_hotels:             "⬡",
-  book_hotel:                "◆",
-  send_confirmation_email:   "◉",
+  get_weather:             "◎",
+  search_flights:          "◈",
+  search_hotels:           "⬡",
+  book_hotel:              "◆",
+  send_confirmation_email: "◉",
 }
 
 const TOOL_LABELS = {
-  get_weather:               "Weather check",
-  search_flights:            "Flight search",
-  search_hotels:             "Hotel search",
-  book_hotel:                "Booking",
-  send_confirmation_email:   "Email sent",
+  get_weather:             "Weather check",
+  search_flights:          "Flight search",
+  search_hotels:           "Hotel search",
+  book_hotel:              "Booking",
+  send_confirmation_email: "Email sent",
 }
 
-function StepBadge({ step, index }) {
+function StepBadge({ step }) {
   const [open, setOpen] = useState(false)
-
   if (step.type === "thinking") {
     return (
       <div className="step step--think">
@@ -37,7 +38,6 @@ function StepBadge({ step, index }) {
       </div>
     )
   }
-
   if (step.type === "tool_call") {
     const icon  = TOOL_ICONS[step.tool]  || "◇"
     const label = TOOL_LABELS[step.tool] || step.tool
@@ -51,26 +51,20 @@ function StepBadge({ step, index }) {
           )}
         </span>
         <span className="step__toggle">{open ? "▲" : "▼"}</span>
-        {open && (
-          <pre className="step__json">{JSON.stringify(step.args, null, 2)}</pre>
-        )}
+        {open && <pre className="step__json">{JSON.stringify(step.args, null, 2)}</pre>}
       </div>
     )
   }
-
   if (step.type === "tool_result") {
     return (
       <div className="step step--result" onClick={() => setOpen(o => !o)}>
         <span className="step__icon">✓</span>
         <span className="step__label">Result received</span>
         <span className="step__toggle">{open ? "▲" : "▼"}</span>
-        {open && (
-          <pre className="step__json">{JSON.stringify(step.result, null, 2)}</pre>
-        )}
+        {open && <pre className="step__json">{JSON.stringify(step.result, null, 2)}</pre>}
       </div>
     )
   }
-
   return null
 }
 
@@ -93,14 +87,12 @@ export default function App() {
   const textareaRef = useRef(null)
   const resultRef   = useRef(null)
 
-  // Animate the loading dots
   useEffect(() => {
     if (!loading) return
     const id = setInterval(() => setDots(d => d.length >= 3 ? "" : d + "."), 400)
     return () => clearInterval(id)
   }, [loading])
 
-  // Scroll to result when it arrives
   useEffect(() => {
     if (result) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }, [result])
@@ -111,11 +103,8 @@ export default function App() {
     setLoading(true)
     setResult(null)
     setError(null)
-
     try {
-
-      const API = import.meta.env.VITE_API_URL || "http://localhost:3001"
-      const res = await fetch(`${API}/api/agent`, {
+      const res  = await fetch(`${API}/api/agent`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ task: task.trim(), email: email.trim() }),
@@ -139,8 +128,6 @@ export default function App() {
 
   return (
     <div className="app">
-
-      {/* ── Header ── */}
       <header className="header">
         <div className="header__logo">
           <span className="header__icon">◈</span>
@@ -149,70 +136,41 @@ export default function App() {
         <p className="header__sub">AI Travel Agent · Module 4</p>
       </header>
 
-      {/* ── Hero ── */}
       <section className="hero">
-        <h1 className="hero__title">
-          Your trip,<br />
-          <span className="hero__accent">handled.</span>
-        </h1>
-        <p className="hero__desc">
-          Tell the agent what you need. It searches, plans, books, and confirms — autonomously.
-        </p>
+        <h1 className="hero__title">Your trip,<br /><span className="hero__accent">handled.</span></h1>
+        <p className="hero__desc">Tell the agent what you need. It searches, plans, books, and confirms — autonomously.</p>
       </section>
 
-      {/* ── Input form ── */}
       <form className="form" onSubmit={handleSubmit}>
         <div className="form__field">
           <label className="form__label">What do you need?</label>
-          <textarea
-            ref={textareaRef}
-            className="form__textarea"
-            value={task}
+          <textarea ref={textareaRef} className="form__textarea" value={task}
             onChange={e => setTask(e.target.value)}
             placeholder="e.g. Find me a hotel in Cairo under $150/night for next weekend…"
-            rows={3}
-            disabled={loading}
-            onKeyDown={e => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(e)
-            }}
+            rows={3} disabled={loading}
+            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(e) }}
           />
         </div>
-
         <div className="form__field">
           <label className="form__label">Your email <span className="form__optional">(optional — for booking confirmations)</span></label>
-          <input
-            className="form__input"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            disabled={loading}
-          />
+          <input className="form__input" type="email" value={email}
+            onChange={e => setEmail(e.target.value)} placeholder="you@example.com" disabled={loading} />
         </div>
-
         <button className="form__btn" type="submit" disabled={loading || !task.trim()}>
-          {loading
-            ? <><span className="btn__spinner" />Running agent{dots}</>
-            : <><span>Run agent</span><span className="btn__arrow">→</span></>
-          }
+          {loading ? <><span className="btn__spinner" />Running agent{dots}</> : <><span>Run agent</span><span className="btn__arrow">→</span></>}
         </button>
-
         <p className="form__hint">Ctrl + Enter to submit</p>
       </form>
 
-      {/* ── Suggestions ── */}
       <section className="suggestions">
         <p className="suggestions__label">Try an example</p>
         <div className="suggestions__grid">
           {SUGGESTED_TASKS.map((s, i) => (
-            <button key={i} className="suggestion" onClick={() => useSuggestion(s)} disabled={loading}>
-              {s}
-            </button>
+            <button key={i} className="suggestion" onClick={() => useSuggestion(s)} disabled={loading}>{s}</button>
           ))}
         </div>
       </section>
 
-      {/* ── Error ── */}
       {error && (
         <div className="error-box">
           <span className="error-box__icon">⚠</span>
@@ -223,47 +181,33 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Result ── */}
       {result && (
         <section className="result" ref={resultRef}>
-
-          {/* Stats row */}
           <div className="result__stats">
             <StatPill label="turns"  value={result.turns} />
             <StatPill label="tokens" value={result.totalTokens.toLocaleString()} />
             <StatPill label="tools"  value={result.steps.filter(s => s.type === "tool_call").length} />
           </div>
-
-          {/* Agent steps trace */}
           {result.steps.length > 0 && (
             <div className="steps">
               <p className="steps__label">Agent trace</p>
-              {result.steps.map((step, i) => (
-                <StepBadge key={i} step={step} index={i} />
-              ))}
+              {result.steps.map((step, i) => <StepBadge key={i} step={step} />)}
             </div>
           )}
-
-          {/* Final answer */}
           <div className="answer">
             <p className="answer__label">Final answer</p>
             <div className="answer__body">
               {result.answer.split("\n").map((line, i) =>
-                line.trim()
-                  ? <p key={i}>{line}</p>
-                  : <br key={i} />
+                line.trim() ? <p key={i}>{line}</p> : <br key={i} />
               )}
             </div>
           </div>
-
         </section>
       )}
 
-      {/* ── Footer ── */}
       <footer className="footer">
         Built with Groq · LLaMA 3.3 70B · React + Vite · Module 4 of Scrimba AI Engineer Path
       </footer>
-
     </div>
   )
 }
