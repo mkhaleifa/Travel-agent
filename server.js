@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001
 // After you get your Vercel URL, add it here and push again
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://travel-agent-xxxx.vercel.app",   // ← replace xxxx with your real Vercel subdomain
+  "https://travel-agent-gh7bnj0se-mkhaleifas-projects.vercel.app",   // ← replace xxxx with your real Vercel subdomain
 ]
 
 app.use(cors({
