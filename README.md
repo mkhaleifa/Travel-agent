@@ -134,8 +134,8 @@ npm run dev
 
 ## 🚀 Deployment
 
-* Frontend → Netlify
-* Backend → Render
+* Frontend → vercel
+* Backend → railway
 
 ---
 
